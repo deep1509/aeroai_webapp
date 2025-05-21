@@ -1,0 +1,105 @@
+/* GLOBAL DARK THEME */
+html, body, [data-testid="stAppViewContainer"] {
+    background-color: #0F172A !important;
+    color: #E2E8F0 !important;
+}
+[data-testid="stSidebar"] {
+    background-color: #1E293B !important;
+    color: #E2E8F0 !important;
+}
+
+/* STREAMLIT BUTTONS (General) */
+.stButton>button {
+    font-weight: 600;
+    font-size: 16px;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    border: none;
+    background-color: #22C55E !important; /* Green button */
+    color: black !important;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+.stButton>button:hover {
+    filter: brightness(1.05);
+}
+
+/* HEADERS & TEXT */
+h1, h2, h3, h4 {
+    color: #22D3EE; /* Cyan */
+}
+p, span, div {
+    color: #CBD5E1; /* Light gray */
+}
+
+/* --- MODIFICATION START --- */
+/* Target the radio button container */
+[data-testid="stSidebar"] .stRadio > label {
+    margin-bottom: 0.5rem; /* Space between radio options */
+    display: flex; /* Allow content to align */
+    align-items: center; /* Vertically align text and dot */
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+/* Hide the native radio button dot */
+[data-testid="stSidebar"] .stRadio > label > div:first-child {
+    display: none;
+}
+
+/* Style the text label of the radio button */
+[data-testid="stSidebar"] .stRadio > label > div:nth-child(2) {
+    display: block; /* Make it a block element */
+    width: 100%;
+    text-align: left;
+    border: none;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    font-size: 15px;
+    font-weight: 600;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    background-color: #1E293B; /* Default button background */
+    color: #E2E8F0; /* Default text color */
+}
+
+/* Hover effect for radio button labels */
+[data-testid="stSidebar"] .stRadio > label:hover > div:nth-child(2) {
+    background-color: #334155; /* Darker on hover */
+    color: white;
+}
+
+/* Style for the SELECTED radio button */
+[data-testid="stSidebar"] .stRadio > label[data-testid="stRadioInline-0-input"]:has(input:checked) > div:nth-child(2) {
+    background-color: #22D3EE; /* Cyan for selected */
+    color: black;
+}
+[data-testid="stSidebar"] .stRadio > label[data-testid="stRadioInline-1-input"]:has(input:checked) > div:nth-child(2) {
+    background-color: #3B82F6; /* Blue for Upload Media */
+    color: white;
+}
+[data-testid="stSidebar"] .stRadio > label[data-testid="stRadioInline-2-input"]:has(input:checked) > div:nth-child(2) {
+    background-color: #F59E0B; /* Amber for Combined Result */
+    color: black;
+}
+[data-testid="stSidebar"] .stRadio > label[data-testid="stRadioInline-3-input"]:has(input:checked) > div:nth-child(2) {
+    background-color: #6366F1; /* Indigo for Dashboard */
+    color: white;
+}
+[data-testid="stSidebar"] .stRadio > label[data-testid="stRadioInline-4-input"]:has(input:checked) > div:nth-child(2) {
+    background-color: #F43F5E; /* Rose for Cost Estimation */
+    color: white;
+}
+
+/* Remove margin from the stRadio group to align with other elements */
+[data-testid="stSidebar"] .stRadio {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+/* Ensure the Streamlit button at the bottom aligns */
+[data-testid="stSidebar"] .stButton {
+    margin-top: 1rem; /* Adjust as needed */
+}
+
+/* --- MODIFICATION END --- */
