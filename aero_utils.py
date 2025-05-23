@@ -8,6 +8,8 @@ import cv2
 import streamlit as st
 from ultralytics import YOLO as YOLOv8
 from uuid import uuid4
+import matplotlib.pyplot as plt
+import numpy as np
 
 
 
