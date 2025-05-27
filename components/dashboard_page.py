@@ -10,8 +10,34 @@ colors = sns.color_palette("dark")   # Other good options below
 
 
 def render_dashboard():
-    st.title("📊 Inspection Dashboard")
-    st.info("Visual summaries and analytics will appear here.")
+    
+    st.markdown("""
+    <h1 style='color:#22D3EE; font-weight:800; font-size:2.5rem;'>
+    Dashboard
+    </h1>
+    """, unsafe_allow_html=True)
+
+    st.markdown("""
+    <style>
+    html, body, [data-testid="stAppViewContainer"] {
+        background-color: #0F172A !important;
+        color: #E2E8F0 !important;
+    }
+    [data-testid="stSidebar"] {
+        background-color: #1E293B !important;
+        color: #E2E8F0 !important;
+    }
+        .image-pair {
+            margin-bottom: 2rem;
+        }
+        .caption {
+            text-align: center;
+            color: black !important;
+            font-weight: 600;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
 
     # Filter inspection data from session
     map_keys = [
