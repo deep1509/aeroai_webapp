@@ -1,4 +1,6 @@
-/* GLOBAL DARK THEME */
+/* 
+#style.css file
+GLOBAL DARK THEME */
 html, body {
     background-color: #0F172A !important;
     color: #E2E8F0 !important;
@@ -15,7 +17,7 @@ html, body {
     border-radius: 0.5rem;
     padding: 0.75rem 1.25rem;
     border: none;
-    background-color: #F7931E !important;
+    background-color: #4c2006 !important;
     color: black !important;
     width: 100%;
     text-align: center;
@@ -65,4 +67,23 @@ p, span, div {
 [data-testid="stSidebar"] .stButton:nth-of-type(4) > button:hover,
 [data-testid="stSidebar"] .stButton:nth-of-type(5) > button:hover {
     filter: brightness(1.1);
+}
+
+/* RESET BUTTON (specific override) */
+.reset-upload-button .stButton > button {
+    background-color: #EF4444 !important;  /* solid red */
+    color: white !important;
+    font-weight: bold;
+    padding: 0.75rem 1.25rem;
+    border-radius: 8px;
+    width: 240px;
+    text-align: center;
+    font-size: 16px;
+    box-shadow: none;
+    border: none;
+}
+
+.reset-upload-button .stButton > button:hover {
+    background-color: #DC2626 !important;
+    filter: brightness(1.05);
 }

@@ -66,20 +66,26 @@ def render_cost_estimation():
     COST_CLEANING = rates["cleaning"]
     COST_REPLACEMENT = rates["replacement"]
 
-    # Initialize session state if not already done, for testing purposes
-    if 'panel_anomaly_map_example1.jpg' not in st.session_state:
-        st.session_state['panel_anomaly_map_example1.jpg'] = {
-            'panel_1': ['dusty'],
-            'panel_2': ['cracked'],
-            'panel_3': ['dusty', 'cracked']
-        }
-        st.session_state['panel_anomaly_map_example2.jpg'] = {
-            'panel_1': ['dusty'],
-            'panel_2': [],
-            'panel_3': ['cracked']
-        }
+    # # Initialize session state if not already done, for testing purposes
+    # if 'panel_anomaly_map_example1.jpg' not in st.session_state:
+    #     st.session_state['panel_anomaly_map_example1.jpg'] = {
+    #         'panel_1': ['dusty'],
+    #         'panel_2': ['cracked'],
+    #         'panel_3': ['dusty', 'cracked']
+    #     }
+    #     st.session_state['panel_anomaly_map_example2.jpg'] = {
+    #         'panel_1': ['dusty'],
+    #         'panel_2': [],
+    #         'panel_3': ['cracked']
+    #     }
 
-    map_keys = [key for key in st.session_state if key.startswith('panel_anomaly_map_')]
+    map_keys = [
+        key for key in st.session_state
+        if key.startswith('panel_anomaly_map_') and (
+            key.endswith('_summary') or ('_frame' not in key and '_summary' not in key)
+        )
+    ]
+
 
     if not map_keys:
         st.warning("⚠️ No inspection data available. Please upload images and run detection to see cost estimates.")
@@ -91,7 +97,7 @@ def render_cost_estimation():
     cost_rows = []
 
     for key in map_keys:
-        filename = key.replace("panel_anomaly_map_", "")
+        filename = key.replace("panel_anomaly_map_", "").replace("_summary", "")
         panel_anomaly_map = st.session_state[key]
         # Count 'dusty' and 'cracked' anomalies for each file
         dusty = sum('dusty' in anomalies for anomalies in panel_anomaly_map.values())

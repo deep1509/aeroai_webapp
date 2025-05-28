@@ -15,11 +15,16 @@ from aero_utils import (
     link_anomalies_to_panels,
     process_video_file
 )
+#
 import pandas as pd
 import matplotlib.pyplot as plt
 from pathlib import Path
 import glob
 import base64
+
+with open("style.css") as f:
+    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+
 
 # 🗂️ App Pages
 PAGES = {

@@ -32,27 +32,29 @@ def show_upload_page(panel_model, anomaly_model_path):
         background-color: #1E293B !important;
         color: #E2E8F0 !important;
     }
-    .reset-button {
-        display: flex;
-        justify-content: center;
-        margin-top: 2rem;
-        margin-bottom: 1rem;
-    }
-    .reset-button button {
-        background-color: #EF4444;
-        color: white;
-        font-weight: bold;
-        padding: 0.6rem 1.2rem;
-        border-radius: 0.5rem;
-        border: none;
-        width: 220px;
-        text-align: center;
-        font-size: 16px;
-    }
-    .reset-button button:hover {
-        filter: brightness(1.1);
-        cursor: pointer;
-    }
+  reset-button-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+}
+.reset-button-container button {
+    background-color: #dc2626 !important;
+    color: white !important;
+    font-weight: 600;
+    font-size: 16px;
+    padding: 0.75rem 2rem;
+    border: none;
+    border-radius: 8px;
+    width: 240px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s ease;
+}
+.reset-button-container button:hover {
+    background-color: #dc2626 !important;
+    filter: brightness(1.1);
+    cursor: pointer;
+}
     h1, h2, h3, h4 {
         color: #22D3EE;
     }
@@ -72,14 +74,16 @@ def show_upload_page(panel_model, anomaly_model_path):
 
     uploaded_files = st.file_uploader("Upload Images or Video Files", accept_multiple_files=True)
 
-    # Reset button placed below the uploader
-    st.markdown("""
-    <div class='reset-button'>
-        <form action="" method="post">
-            <button type="submit" name="reset_uploads">♻️ Reset Uploaded Data</button>
-        </form>
-    </div>
-    """, unsafe_allow_html=True)
+    # Add this after file uploader
+    col1, col2, col3 = st.columns([1, 0.5, 1])  # Center the button in the middle column
+    with col2:
+        if st.button("♻️ Reset Uploaded Data", key="reset_upload_btn"):
+            reset_inspection_data()
+
+
+
+
+
 
     if st.session_state.get("reset_uploads"):
         reset_inspection_data()
