@@ -3,6 +3,6 @@ matplotlib
 seaborn
 pandas
 numpy
-opencv-python
+opencv-python-headless
 Pillow
 gitpython
