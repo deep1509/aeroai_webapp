@@ -6,6 +6,10 @@ import seaborn as sns
 sns.set_theme(style="dark")  # dark-compatible grid style
 plt.style.use("dark_background")  # ensure matplotlib matches
 colors = sns.color_palette("dark")   # Other good options below
+from fpdf import FPDF
+from io import BytesIO
+from datetime import datetime
+
 
 
 
@@ -165,13 +169,130 @@ def render_dashboard():
     st.dataframe(summary_df, use_container_width=True)
 
     # ──────────── 📥 Export Button ────────────
-    csv_data = summary_df.to_csv(index=False).encode("utf-8")
-    st.download_button(
-        "📥 Download Summary CSV",
-        data=csv_data,
-        file_name="inspection_summary.csv",
-        mime="text/csv"
+    pdf_data = generate_dashboard_report_pdf(
+    summary_df,
+    total_panels=summary_df["Total Panels"].sum(),
+    total_normal=summary_df["Normal"].sum(),
+    total_dusty=summary_df["Dusty"].sum(),
+    total_cracked=summary_df["Cracked"].sum()
     )
 
-    # ──────────── ⏱ Timestamp ────────────
-    st.caption(f"🕒 Last Updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    st.download_button(
+        label="📥 Download PDF Report",
+        data=pdf_data,
+        file_name="AeroAI_Inspection_Report.pdf",
+        mime="application/pdf"
+    )
+
+# 🧾 TechFest-Ready PDF Dashboard Report for AeroAI
+from fpdf import FPDF
+from datetime import datetime
+from io import BytesIO
+
+class DashboardPDF(FPDF):
+    def header(self):
+        self.set_fill_color(15, 23, 42)
+        self.rect(0, 0, 210, 25, 'F')
+        self.image("assets/logo1.png", 10, 5, 15)
+        self.set_text_color(255, 255, 255)
+        self.set_font("Arial", "B", 14)
+        self.set_y(8)
+        self.cell(0, 10, "AeroAI - Inspection Dashboard Summary", ln=True, align="C")
+
+    def footer(self):
+        self.set_y(-15)
+        self.set_font("Arial", "I", 8)
+        self.set_text_color(180, 180, 180)
+        self.cell(0, 10, f"Generated on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} | Page {self.page_no()}", align="C")
+
+def generate_dashboard_report_pdf(summary_df, total_panels, total_normal, total_dusty, total_cracked):
+    pdf = DashboardPDF()
+    pdf.add_page()
+
+    # Full page dark background
+    pdf.set_fill_color(15, 23, 42)
+    pdf.rect(0, 25, 210, 275, 'F')
+
+    pdf.ln(20)
+    pdf.set_font("Arial", "B", 16)
+    pdf.set_text_color(255, 165, 0)
+    pdf.cell(0, 10, "Panel Condition Summary", ln=True, align="C")
+    pdf.ln(10)
+
+    # Summary Cards
+    x_positions = [15, 75, 135]
+    labels = ["Total Panels", "Normal Panels", "Anomalous Panels"]
+    values = [total_panels, total_normal, total_dusty + total_cracked]
+    colors = [(224, 242, 254), (220, 252, 231), (254, 226, 226)]
+
+    y_start = pdf.get_y()
+    for i in range(3):
+        pdf.set_xy(x_positions[i], y_start)
+        pdf.set_fill_color(*colors[i])
+        pdf.rect(x_positions[i], y_start, 60, 25, 'F')
+        pdf.set_text_color(30, 41, 59)
+        pdf.set_font("Arial", "B", 12)
+        pdf.set_xy(x_positions[i], y_start + 5)
+        pdf.cell(60, 6, labels[i], ln=2, align="C")
+        pdf.set_font("Arial", "B", 16)
+        pdf.cell(60, 10, str(values[i]), ln=1, align="C")
+
+    pdf.ln(35)
+
+    # Breakdown Stats
+    pdf.set_font("Arial", "B", 14)
+    pdf.set_text_color(255, 255, 255)
+    pdf.cell(0, 10, "Condition Breakdown", ln=True)
+    pdf.set_font("Arial", "", 12)
+    pdf.set_text_color(220, 220, 220)
+    pdf.cell(0, 8, f"- Normal Panels: {total_normal}", ln=True)
+    pdf.cell(0, 8, f"- Dusty Panels: {total_dusty}", ln=True)
+    pdf.cell(0, 8, f"- Cracked Panels: {total_cracked}", ln=True)
+
+    # Key Metrics with percentages
+    pdf.ln(5)
+    pdf.set_font("Arial", "B", 14)
+    pdf.set_text_color(255, 255, 255)
+    pdf.cell(0, 10, "Key Metrics", ln=True)
+
+    pdf.set_font("Arial", "", 12)
+    pdf.set_text_color(240, 240, 240)
+    if total_panels > 0:
+        pct_normal = f"{(total_normal / total_panels) * 100:.1f}%"
+        pct_dusty = f"{(total_dusty / total_panels) * 100:.1f}%"
+        pct_cracked = f"{(total_cracked / total_panels) * 100:.1f}%"
+    else:
+        pct_normal = pct_dusty = pct_cracked = "0.0%"
+
+    pdf.cell(0, 8, f"- Normal Panels: {total_normal} panels ({pct_normal})", ln=True)
+    pdf.cell(0, 8, f"- Dusty Panels: {total_dusty} panels ({pct_dusty})", ln=True)
+    pdf.cell(0, 8, f"- Cracked Panels: {total_cracked} panels ({pct_cracked})", ln=True)
+
+    # Table Header
+    pdf.ln(8)
+    pdf.set_fill_color(30, 41, 59)
+    pdf.set_text_color(255, 255, 255)
+    pdf.set_font("Arial", "B", 12)
+    pdf.cell(70, 10, "File", 1, 0, 'C', fill=True)
+    pdf.cell(30, 10, "Total", 1, 0, 'C', fill=True)
+    pdf.cell(30, 10, "Normal", 1, 0, 'C', fill=True)
+    pdf.cell(30, 10, "Dusty", 1, 0, 'C', fill=True)
+    pdf.cell(30, 10, "Cracked", 1, 1, 'C', fill=True)
+
+    # Table Rows
+    pdf.set_font("Arial", "", 12)
+    pdf.set_text_color(255, 255, 255)
+    for idx, row in summary_df.iterrows():
+        pdf.cell(70, 8, str(row["File"]), 1)
+        pdf.cell(30, 8, str(row["Total Panels"]), 1, 0, 'C')
+        pdf.cell(30, 8, str(row["Normal"]), 1, 0, 'C')
+        pdf.cell(30, 8, str(row["Dusty"]), 1, 0, 'C')
+        pdf.cell(30, 8, str(row["Cracked"]), 1, 1, 'C')
+
+    # Export PDF
+    buffer = BytesIO()
+    pdf_bytes = pdf.output(dest='S').encode('latin1')
+    buffer.write(pdf_bytes)
+    buffer.seek(0)
+    buffer.name = "AeroAI_Dashboard_Report.pdf"
+    return buffer

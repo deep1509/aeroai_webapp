@@ -2,6 +2,9 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 from pathlib import Path
+from fpdf import FPDF
+from io import BytesIO
+from datetime import datetime
 
 from theme import apply_dark_theme
 apply_dark_theme()
@@ -168,12 +171,21 @@ def render_cost_estimation():
     st.markdown("### 📂 Full File Breakdown")
     st.dataframe(df, use_container_width=True)
 
-    # 📥 Download CSV
+    cleaning_only_cost = total_dusty * COST_CLEANING
+    extra_cost = total_cost - cleaning_only_cost  # ✅ Add this line
+
+    pdf_data = generate_cost_report_pdf(
+    df, panel_type, total_cost, total_dusty, total_cracked,
+    most_expensive, extra_cost, cleaning_only_cost, COST_CLEANING, COST_REPLACEMENT
+    )
+
+
+
     st.download_button(
-        "📥 Download Cost Report",
-        data=df.to_csv(index=False).encode("utf-8"),
-        file_name="cost_report.csv",
-        mime="text/csv"
+        label="📄 Download PDF Report",
+        data=pdf_data,
+        file_name="AeroAI_Cost_Report.pdf",
+        mime="application/pdf"
     )
     
      # 💼 Pricing Matrix (Dynamic by panel type)
@@ -200,5 +212,114 @@ def render_cost_estimation():
         """, unsafe_allow_html=True)
 
 
+
+
     # ⏱ Timestamp
     st.caption(f"🕒 Last Updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+
+
+# 🚀 Upgraded PDF Report for AeroAI (TechFest-Ready)
+from fpdf import FPDF
+from datetime import datetime
+from io import BytesIO
+import matplotlib.pyplot as plt
+import tempfile
+
+class AeroPDF(FPDF):
+    def header(self):
+        self.set_fill_color(15, 23, 42)  # Dark navy
+        self.rect(0, 0, 210, 25, 'F')
+        self.image("assets/logo1.png", 10, 5, 15)
+        self.set_font("Arial", "B", 14)
+        self.set_text_color(255, 255, 255)
+        self.set_y(8)
+        self.cell(0, 10, "AeroAI - Solar Panel Inspection Report", ln=True, align="C")
+        self.ln(5)
+
+    def footer(self):
+        self.set_y(-15)
+        self.set_font("Arial", "I", 8)
+        self.set_text_color(180, 180, 180)
+        self.cell(0, 10, f"Generated on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} | Page {self.page_no()}", align="C")
+
+def generate_cost_report_pdf(df, panel_type, total_cost, total_dusty, total_cracked, most_expensive, extra_cost, cleaning_only_cost, cleaning_cost, replacement_cost):
+    pdf = AeroPDF()
+    pdf.add_page()
+
+    # Background fill
+    pdf.set_fill_color(15, 23, 42)
+    pdf.rect(0, 25, 210, 275, 'F')
+
+    pdf.set_font("Arial", "B", 16)
+    pdf.set_text_color(255, 165, 0)
+    pdf.ln(20)
+    pdf.cell(0, 10, "Cost Estimation Summary", ln=True, align="C")
+
+    # Summary Cards
+    y_start = pdf.get_y() + 5
+    x_positions = [15, 75, 135]
+    labels = ["Total Panels", "Dusty Panels", "Cracked Panels"]
+    values = [total_dusty + total_cracked, total_dusty, total_cracked]
+    colors = [(236, 253, 245), (252, 243, 207), (254, 226, 226)]
+
+    for i in range(3):
+        pdf.set_xy(x_positions[i], y_start)
+        pdf.set_fill_color(*colors[i])
+        pdf.rect(x_positions[i], y_start, 60, 25, 'F')
+        pdf.set_text_color(30, 41, 59)
+        pdf.set_font("Arial", "B", 12)
+        pdf.set_xy(x_positions[i], y_start + 5)
+        pdf.cell(60, 6, labels[i], ln=2, align="C")
+        pdf.set_font("Arial", "B", 16)
+        pdf.cell(60, 10, str(values[i]), ln=1, align="C")
+
+    pdf.ln(35)
+
+    # Total Cost Section
+    pdf.set_font("Arial", "B", 14)
+    pdf.set_text_color(250, 204, 21)
+    pdf.cell(0, 10, f"Total Maintenance Cost: ${total_cost:,.0f}", ln=True, align="C")
+
+    pdf.set_font("Arial", "", 12)
+    pdf.set_text_color(200, 200, 200)
+    pdf.ln(5)
+    pdf.cell(0, 8, f"Panel Type Selected: {panel_type}", ln=True)
+    pdf.cell(0, 8, f"Cleaning per Dusty Panel: ${cleaning_cost}", ln=True)
+    pdf.cell(0, 8, f"Replacement per Cracked Panel: ${replacement_cost}", ln=True)
+
+    pdf.ln(8)
+    pdf.set_font("Arial", "B", 13)
+    pdf.set_text_color(255, 255, 255)
+    pdf.cell(0, 10, "Key Insights", ln=True)
+
+    pdf.set_font("Arial", "", 12)
+    pdf.cell(0, 8, f"- Most Expensive File: {most_expensive['File']} (${int(most_expensive['Cost'])})", ln=True)
+    pdf.cell(0, 8, f"- Estimated Cost Without Cracks: ${cleaning_only_cost:,.0f}", ln=True)
+    pdf.cell(0, 8, f"- Extra Cost Due to Cracks: ${extra_cost:,.0f}", ln=True)
+
+    # File Table Header
+    pdf.ln(8)
+    pdf.set_fill_color(30, 41, 59)
+    pdf.set_text_color(255, 255, 255)
+    pdf.set_font("Arial", "B", 12)
+    pdf.cell(80, 10, "File Name", 1, 0, 'C', fill=True)
+    pdf.cell(30, 10, "Dusty", 1, 0, 'C', fill=True)
+    pdf.cell(30, 10, "Cracked", 1, 0, 'C', fill=True)
+    pdf.cell(40, 10, "Cost", 1, 1, 'C', fill=True)
+
+    # Table Data
+    pdf.set_font("Arial", "", 12)
+    for idx, row in df.iterrows():
+        pdf.cell(80, 8, str(row["File"]), 1)
+        pdf.cell(30, 8, str(row["Dusty"]), 1, 0, 'C')
+        pdf.cell(30, 8, str(row["Cracked"]), 1, 0, 'C')
+        pdf.cell(40, 8, f"${row['Cost']}", 1, 1, 'C')
+
+
+    # Export PDF
+    buffer = BytesIO()
+    pdf_bytes = pdf.output(dest='S').encode('latin1')
+    buffer.write(pdf_bytes)
+    buffer.seek(0)
+    buffer.name = "AeroAI_Cost_Report.pdf"
+    return buffer
