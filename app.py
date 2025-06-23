@@ -75,8 +75,10 @@ for label in PAGES.keys():
 PANEL_MODEL_PATH = "models/yolov8_panel.pt"
 ANOMALY_MODEL_PATH = "models/yolov5_anomaly.pt"
 
-st.sidebar.markdown("## 🚀 Loading Models...")
-panel_model, anomaly_model = load_models(PANEL_MODEL_PATH, ANOMALY_MODEL_PATH)
+#load_models(PANEL_MODEL_PATH, ANOMALY_MODEL_PATH)
+
+with st.spinner("Loading models..."):
+    panel_model, anomaly_model = None, None
 st.sidebar.success("✅ Models Loaded Successfully!")
 
 # 🔀 Routing
