@@ -3,7 +3,8 @@ matplotlib
 seaborn
 pandas
 numpy
-opencv-python-headless
+opencv-python-headless==4.11.0.86
+
 Pillow
 gitpython
 fpdf2==2.7.6
