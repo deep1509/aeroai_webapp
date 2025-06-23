@@ -89,43 +89,63 @@ import uuid
 
 
 
-def link_anomalies_to_panels(panel_boxes, anomaly_boxes, iou_threshold=0.5):
+def link_anomalies_to_panels(panel_boxes, anomaly_boxes, iou_threshold=0.5, max_age=10):
+    """Match detected panels to previously seen ones and keep a persistent count.
+
+    This simplistic tracker updates the stored bounding box each time a panel is
+    matched to handle camera motion. Panels that are not observed for ``max_age``
+    consecutive frames are dropped to prevent unbounded growth of the tracker.
+    """
+
     global persistent_panels
-    # Global tracker across frames (reset per video)
+
     panel_map = {}
+    matched_ids = set()
 
+    # --- Match detections to existing panels ---
     for panel in panel_boxes:
-        matched = False
         panel_bbox = panel['bbox']
+        best_idx = None
+        best_iou = 0.0
 
-        # Try to match with existing persistent panels
-        for tracked in persistent_panels:
-            tracked_id, tracked_bbox = tracked['id'], tracked['bbox']
-            iou = calculate_iou(panel_bbox, tracked_bbox)
-            if iou > iou_threshold:
-                panel_id = tracked_id
-                matched = True
-                break
+        for idx, tracked in enumerate(persistent_panels):
+            iou = calculate_iou(panel_bbox, tracked['bbox'])
+            if iou > iou_threshold and iou > best_iou:
+                best_iou = iou
+                best_idx = idx
 
-        # If not matched, assign new panel ID
-        if not matched:
-            panel_id = f"Panel_{str(uuid.uuid4())[:8]}"
-            persistent_panels.append({'id': panel_id, 'bbox': panel_bbox})
+        if best_idx is not None:
+            # Update existing panel
+            persistent_panels[best_idx]['bbox'] = panel_bbox
+            persistent_panels[best_idx]['age'] = 0
+            panel_id = persistent_panels[best_idx]['id']
+            matched_ids.add(panel_id)
+        else:
+            # Create new panel entry
+            panel_id = f"Panel_{uuid.uuid4().hex[:8]}"
+            persistent_panels.append({'id': panel_id, 'bbox': panel_bbox, 'age': 0})
+            matched_ids.add(panel_id)
 
         panel_map[panel_id] = set()
 
-        # Match this panel to anomaly boxes
+        # Associate anomalies with this panel
         for anomaly in anomaly_boxes:
             abox = anomaly['bbox']
             cls = anomaly['class_name']
             if (
-                calculate_iou(panel_bbox, abox) > 0.3 or
-                is_center_inside(panel_bbox, abox) or
-                is_panel_fully_inside_anomaly(panel_bbox, abox)
+                calculate_iou(panel_bbox, abox) > 0.3
+                or is_center_inside(panel_bbox, abox)
+                or is_panel_fully_inside_anomaly(panel_bbox, abox)
             ):
                 panel_map[panel_id].add(cls)
 
-    # Default to normal if no anomalies found
+    # Increment age for unmatched panels and drop stale ones
+    for tracked in persistent_panels:
+        if tracked['id'] not in matched_ids:
+            tracked['age'] += 1
+    persistent_panels = [p for p in persistent_panels if p['age'] <= max_age]
+
+    # Default to normal if no anomaly linked
     for pid in panel_map:
         if not panel_map[pid]:
             panel_map[pid].add('Not Classified')
