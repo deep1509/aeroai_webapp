@@ -7,3 +7,4 @@ opencv-python-headless
 Pillow
 gitpython
 fpdf2==2.7.6
+ultralytics
