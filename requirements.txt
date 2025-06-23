@@ -9,4 +9,4 @@ Pillow
 gitpython
 fpdf2==2.7.6
 ultralytics==8.1.25
-
+git+https://github.com/ultralytics/yolov5.git
