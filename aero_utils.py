@@ -218,7 +218,22 @@ def process_video_file(uploaded_file, panel_model, anomaly_model_path, save_dir=
         name='panel_video',
         exist_ok=True
     )
+    # Force convert .avi to .mp4 if needed
     panel_output_video = save_path / "panel_video" / video_path.name
+    if panel_output_video.suffix.lower() == ".avi":
+        fixed_panel_video = panel_output_video.with_suffix(".mp4")
+        try:
+            subprocess.run([
+                "ffmpeg", "-y",
+                "-i", str(panel_output_video),
+                "-vcodec", "libx264",
+                "-crf", "23",
+                "-preset", "fast",
+                str(fixed_panel_video)
+            ], check=True)
+            panel_output_video = fixed_panel_video
+        except subprocess.CalledProcessError:
+            st.warning("⚠️ Could not convert panel video to .mp4")
 
     # Anomaly detection using YOLOv5 CLI
     anomaly_subdir = f"anomaly_video_{unique_id}"
